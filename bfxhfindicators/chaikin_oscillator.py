@@ -3,60 +3,61 @@ from bfxhfindicators.ema import EMA
 from bfxhfindicators.accumulation_distribution import AccumulationDistribution
 from math import isfinite
 
+
 class ChaikinOsc(Indicator):
-  def __init__(self, short, long, cache_size=None):
-    self._shortEMA = EMA(short, cache_size)
-    self._longEMA = EMA(long, cache_size)
-    self._adl = AccumulationDistribution()
+    def __init__(self, short, long, cache_size=None):
+        self._shortEMA = EMA(short, cache_size)
+        self._longEMA = EMA(long, cache_size)
+        self._adl = AccumulationDistribution()
 
-    super().__init__({
-      'args': [short, long, cache_size],
-      'id': 'chaikinosc',
-      'name': 'ChaikinOsc(%f, %f)' % (short, long),
-      'seed_period': max([short, long]),
-      'data_type': 'candle',
-      'data_key': '*',
-      'cache_size': cache_size
-    })
+        super().__init__({
+            'args': [short, long, cache_size],
+            'id': 'chaikinosc',
+            'name': 'ChaikinOsc(%f, %f)' % (short, long),
+            'seed_period': max([short, long]),
+            'data_type': 'candle',
+            'data_key': '*',
+            'cache_size': cache_size
+        })
 
-  def reset(self):
-    super().reset()
-    self._shortEMA.reset()
-    self._longEMA.reset()
-    self._adl.reset()
+    def reset(self):
+        super().reset()
+        self._shortEMA.reset()
+        self._longEMA.reset()
+        self._adl.reset()
 
-  def update(self, candle):
-    self._adl.update(candle)
-    adl = self._adl.v()
+    def update(self, candle):
+        self._adl.update(candle)
+        adl = self._adl.v()
 
-    if not isfinite(adl):
-      return
-    
-    self._shortEMA.update(adl)
-    self._longEMA.update(adl)
+        if not isfinite(adl):
+            return
 
-    short = self._shortEMA.v()
-    long = self._longEMA.v()
+        self._shortEMA.update(adl)
+        self._longEMA.update(adl)
 
-    if (isfinite(short) and isfinite(long)):
-      super().update(short - long)
+        short = self._shortEMA.v()
+        long = self._longEMA.v()
 
-    return self.v()
+        if (isfinite(short) and isfinite(long)):
+            super().update(short - long)
 
-  def add(self, candle):
-    self._adl.add(candle)
-    adl = self._adl.v()
+        return self.v()
 
-    if not isfinite(adl):
-      return
-    
-    self._shortEMA.add(adl)
-    self._longEMA.add(adl)
+    def add(self, candle):
+        self._adl.add(candle)
+        adl = self._adl.v()
 
-    short = self._shortEMA.v()
-    long = self._longEMA.v()
+        if not isfinite(adl):
+            return
 
-    if (isfinite(short) and isfinite(long)):
-      super().add(short - long)
+        self._shortEMA.add(adl)
+        self._longEMA.add(adl)
 
-    return self.v()
+        short = self._shortEMA.v()
+        long = self._longEMA.v()
+
+        if (isfinite(short) and isfinite(long)):
+            super().add(short - long)
+
+        return self.v()

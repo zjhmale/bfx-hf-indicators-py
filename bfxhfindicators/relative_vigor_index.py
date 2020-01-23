@@ -1,94 +1,95 @@
 from bfxhfindicators.indicator import Indicator
 from bfxhfindicators.sma import SMA
 
+
 class RVGI(Indicator):
-  def __init__(self, period, cache_size=None):
-    self._numeratorSMA = SMA(period, cache_size)
-    self._denominatorSMA = SMA(period, cache_size)
-    self._buffer = []
+    def __init__(self, period, cache_size=None):
+        self._numeratorSMA = SMA(period, cache_size)
+        self._denominatorSMA = SMA(period, cache_size)
+        self._buffer = []
 
-    super().__init__({
-      'args': [period, cache_size],
-      'id': 'rvgi',
-      'name': 'RVGI(%f)' % period,
-      'seed_period': period,
-      'data_type': 'candle',
-      'data_key': '*',
-      'cache_size': cache_size
-    })
-  
-  def reset(self):
-    super().reset()
-    self._numeratorSMA.reset()
-    self._denominatorSMA.reset()
-    self._buffer = []
+        super().__init__({
+            'args': [period, cache_size],
+            'id': 'rvgi',
+            'name': 'RVGI(%f)' % period,
+            'seed_period': period,
+            'data_type': 'candle',
+            'data_key': '*',
+            'cache_size': cache_size
+        })
 
-  def calc(candle, buffer):
-    barA = candle['close'] - candle['open']
-    barB = buffer[2]['close'] - buffer[2]['open']
-    barC = buffer[1]['close'] - buffer[1]['open']
-    barD = buffer[0]['close'] - buffer[0]['open']
-    num = (barA + (barB * 2) + (barC * 2) + barD) / 6
+    def reset(self):
+        super().reset()
+        self._numeratorSMA.reset()
+        self._denominatorSMA.reset()
+        self._buffer = []
 
-    e = candle['high'] - candle['low']
-    f = buffer[2]['high'] - buffer[2]['low']
-    g = buffer[1]['high'] - buffer[1]['low']
-    h = buffer[0]['high'] - buffer[0]['low']
-    den = (e + (f * 2) + (g * 2) + h) / 6
+    def calc(candle, buffer):
+        barA = candle['close'] - candle['open']
+        barB = buffer[2]['close'] - buffer[2]['open']
+        barC = buffer[1]['close'] - buffer[1]['open']
+        barD = buffer[0]['close'] - buffer[0]['open']
+        num = (barA + (barB * 2) + (barC * 2) + barD) / 6
 
-    return [num, den]
+        e = candle['high'] - candle['low']
+        f = buffer[2]['high'] - buffer[2]['low']
+        g = buffer[1]['high'] - buffer[1]['low']
+        h = buffer[0]['high'] - buffer[0]['low']
+        den = (e + (f * 2) + (g * 2) + h) / 6
 
-  def update(self, candle):
-    if len(self._buffer) == 0:
-      self._buffer.append(candle)
-    else:
-      self._buffer[-1] = candle
+        return [num, den]
 
-    if len(self._buffer) < 4:
-      return super().update(0)
+    def update(self, candle):
+        if len(self._buffer) == 0:
+            self._buffer.append(candle)
+        else:
+            self._buffer[-1] = candle
 
-    [num, den] = RVGI.calc(candle, self._buffer)
+        if len(self._buffer) < 4:
+            return super().update(0)
 
-    self._numeratorSMA.update(num)
-    self._denominatorSMA.update(den)
+        [num, den] = RVGI.calc(candle, self._buffer)
 
-    rvi = self._numeratorSMA.v() / self._denominatorSMA.v()
-    signal = 0
+        self._numeratorSMA.update(num)
+        self._denominatorSMA.update(den)
 
-    if self.l() >= 3:
-      i = self.v()['rvi']
-      j = self.prev(1)['rvi']
-      k = self.prev(2)['rvi']
-      signal = (rvi + (i * 2) + (j * 2) + k) / 6
+        rvi = self._numeratorSMA.v() / self._denominatorSMA.v()
+        signal = 0
 
-    super().update({
-      'rvi': rvi,
-      'signal': signal
-    })
+        if self.l() >= 3:
+            i = self.v()['rvi']
+            j = self.prev(1)['rvi']
+            k = self.prev(2)['rvi']
+            signal = (rvi + (i * 2) + (j * 2) + k) / 6
 
-  def add(self, candle):
-    self._buffer.append(candle)
+        super().update({
+            'rvi': rvi,
+            'signal': signal
+        })
 
-    if len(self._buffer) > 4:
-      del self._buffer[0]
-    elif len(self._buffer) < 4:
-      return self.v()
+    def add(self, candle):
+        self._buffer.append(candle)
 
-    [num, den] = RVGI.calc(candle, self._buffer)
+        if len(self._buffer) > 4:
+            del self._buffer[0]
+        elif len(self._buffer) < 4:
+            return self.v()
 
-    self._numeratorSMA.add(num)
-    self._denominatorSMA.add(den)
+        [num, den] = RVGI.calc(candle, self._buffer)
 
-    rvi = self._numeratorSMA.v() / self._denominatorSMA.v()
-    signal = 0
+        self._numeratorSMA.add(num)
+        self._denominatorSMA.add(den)
 
-    if self.l() >= 4:
-      i = self.prev(1)['rvi']
-      j = self.prev(2)['rvi']
-      k = self.prev(3)['rvi']
-      signal = (rvi + (i * 2) + (j * 2) + k) / 6
+        rvi = self._numeratorSMA.v() / self._denominatorSMA.v()
+        signal = 0
 
-    super().add({
-      'rvi': rvi,
-      'signal': signal
-    })
+        if self.l() >= 4:
+            i = self.prev(1)['rvi']
+            j = self.prev(2)['rvi']
+            k = self.prev(3)['rvi']
+            signal = (rvi + (i * 2) + (j * 2) + k) / 6
+
+        super().add({
+            'rvi': rvi,
+            'signal': signal
+        })
