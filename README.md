@@ -1,6 +1,6 @@
 # Bitfinex Indicator Library for Python
 
-[![Build Status](https://travis-ci.org/bitfinexcom/bfx-hf-indicators-py.svg?branch=master)](https://travis-ci.org/bitfinexcom/bfx-hf-indicators-py)
+[![Build Status](https://travis-ci.org/zjhmale/bfx-hf-indicators-py.svg?branch=master)](https://travis-ci.org/zjhmale/bfx-hf-indicators-py)
 
 This repo contains a collection of trading indicators implemented to support incremental updates, both from trade and candle data (depending on the indicator). All indicators provide the same set of base methods:
 
@@ -52,7 +52,7 @@ This repo contains a collection of trading indicators implemented to support inc
 
 Clone package into PYTHONPATH:
 ```sh
-git clone https://github.com/bitfinexcom/bfx-hf-indicators-py.git
+git clone https://github.com/zjhmale/bfx-hf-indicators-py.git
 cd bfx-hf-indicators-py
 ```
 
@@ -62,12 +62,16 @@ pip3 install -r requirements.txt
 python3 setup.py install
 ```
 
+```sh
+pip3 install git+https://github.com/zjhmale/bfx-hf-indicators-py.git@master
+```
+
 ## Quickstart
 
 ```python
 from bfxhfindicators import RSI
 
-rsi = RSI([14])
+rsi = RSI(period=14)
 
 rsi.add(14000)
 rsi.add(14010)
