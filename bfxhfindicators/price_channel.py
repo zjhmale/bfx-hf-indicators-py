@@ -1,57 +1,58 @@
 from bfxhfindicators.indicator import Indicator
 
+
 class PC(Indicator):
-  def __init__(self, period, offset, cache_size=None):
-    self._p = period
-    self._offset = offset
-    self._l = period + offset
-    self._buffer = []
+    def __init__(self, period, offset, cache_size=None):
+        self._p = period
+        self._offset = offset
+        self._l = period + offset
+        self._buffer = []
 
-    super().__init__({
-      'args': [period, offset, cache_size],
-      'id': 'pc',
-      'name': 'PC(%f, %f)' % (period, offset),
-      'seed_period': period,
-      'data_type': 'candle',
-      'data_key': '*',
-      'cache_size': cache_size
-    })
-  
-  def reset(self):
-    super().reset()
-    self._buffer = []
+        super().__init__({
+            'args': [period, offset, cache_size],
+            'id': 'pc',
+            'name': 'PC(%f, %f)' % (period, offset),
+            'seed_period': period,
+            'data_type': 'candle',
+            'data_key': '*',
+            'cache_size': cache_size
+        })
 
-  def update(self, candle):
-    if len(self._buffer) == 0:
-      self._buffer.append(candle)
-    else:
-      self._buffer[-1] = candle
+    def reset(self):
+        super().reset()
+        self._buffer = []
 
-    if len(self._buffer) < self._l:
-      return super().update(0)
+    def update(self, candle):
+        if len(self._buffer) == 0:
+            self._buffer.append(candle)
+        else:
+            self._buffer[-1] = candle
 
-    upper = max(map(lambda c: c['high'], self._buffer[0:self._p]))
-    lower = min(map(lambda c: c['low'], self._buffer[0:self._p]))
+        if len(self._buffer) < self._l:
+            return super().update(0)
 
-    return super().update({
-      'upper': upper,
-      'center': (upper + lower) / 2,
-      'lower': lower
-    })
+        upper = max(map(lambda c: c['high'], self._buffer[0:self._p]))
+        lower = min(map(lambda c: c['low'], self._buffer[0:self._p]))
 
-  def add(self, candle):
-    self._buffer.append(candle)
+        return super().update({
+            'upper': upper,
+            'center': (upper + lower) / 2,
+            'lower': lower
+        })
 
-    if len(self._buffer) > self._l:
-      del self._buffer[0]
-    elif len(self._buffer) < self._l:
-      return self.v()
+    def add(self, candle):
+        self._buffer.append(candle)
 
-    upper = max(map(lambda c: c['high'], self._buffer[0:self._p]))
-    lower = min(map(lambda c: c['low'], self._buffer[0:self._p]))
+        if len(self._buffer) > self._l:
+            del self._buffer[0]
+        elif len(self._buffer) < self._l:
+            return self.v()
 
-    return super().add({
-      'upper': upper,
-      'center': (upper + lower) / 2,
-      'lower': lower
-    })
+        upper = max(map(lambda c: c['high'], self._buffer[0:self._p]))
+        lower = min(map(lambda c: c['low'], self._buffer[0:self._p]))
+
+        return super().add({
+            'upper': upper,
+            'center': (upper + lower) / 2,
+            'lower': lower
+        })

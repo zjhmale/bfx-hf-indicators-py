@@ -2,74 +2,74 @@ from bfxhfindicators.indicator import Indicator
 from bfxhfindicators.ema import EMA
 from math import isfinite
 
+
 class RSI(Indicator):
-  def __init__(self, period, cache_size=None):
-    self._p = period
-    self._uEMA = EMA(period, cache_size)
-    self._dEMA = EMA(period, cache_size)
-    self._prevInputValue = None
- 
-    super().__init__({
-      'args': [period, cache_size],
-      'id': 'rsi',
-      'name': 'RSI(%f)' % (period),
-      'seed_period': period,
-      'cache_size': cache_size
-    })
+    def __init__(self, period, cache_size=None):
+        self._p = period
+        self._uEMA = EMA(period, cache_size)
+        self._dEMA = EMA(period, cache_size)
+        self._prevInputValue = None
 
-  def reset(self):
-    super().reset()
+        super().__init__({
+            'args': [period, cache_size],
+            'id': 'rsi',
+            'name': 'RSI(%f)' % (period),
+            'seed_period': period,
+            'cache_size': cache_size
+        })
 
-    self._prevInputValue = None
-    self._uEMA.reset()
-    self._dEMA.reset()
+    def reset(self):
+        super().reset()
 
-  def _ud (self, v):
-    delta = 0
-    
-    if self._prevInputValue != None:
-      delta = v - self._prevInputValue
+        self._prevInputValue = None
+        self._uEMA.reset()
+        self._dEMA.reset()
 
-    return {
-      'u': delta if delta > 0 else 0,
-      'd': -delta if delta < 0 else 0
-    }
+    def _ud(self, v):
+        delta = 0
 
-  def _rs (self):
-    uAvg = self._uEMA.v()
-    dAvg = self._dEMA.v()
+        if self._prevInputValue is None:
+            delta = v - self._prevInputValue
 
-    if not isfinite(uAvg) or not isfinite(dAvg) or dAvg == 0:
-      return None
-    else:
-      return uAvg / dAvg
+        return {
+            'u': delta if delta > 0 else 0,
+            'd': -delta if delta < 0 else 0
+        }
 
+    def _rs(self):
+        uAvg = self._uEMA.v()
+        dAvg = self._dEMA.v()
 
-  def update(self, v):
-    if self._prevInputValue == None:
-      return
+        if not isfinite(uAvg) or not isfinite(dAvg) or dAvg == 0:
+            return None
+        else:
+            return uAvg / dAvg
 
-    ud = self._ud(v)
-    self._uEMA.update(ud['u'])
-    self._dEMA.update(ud['d'])
-    rs = self._rs()
+    def update(self, v):
+        if self._prevInputValue is None:
+            return
 
-    if rs is not None:
-      super().update(100 - (100 / (1 + rs)))
+        ud = self._ud(v)
+        self._uEMA.update(ud['u'])
+        self._dEMA.update(ud['d'])
+        rs = self._rs()
 
-    return self.v()
+        if rs is not None:
+            super().update(100 - (100 / (1 + rs)))
 
-  def add(self, v):
-    if self._prevInputValue == None:
-      self._prevInputValue = v
-    
-    ud = self._ud(v)
-    self._uEMA.add(ud['u'])
-    self._dEMA.add(ud['d'])
-    rs = self._rs()
+        return self.v()
 
-    if rs is not None:
-      super().add(100 - (100 / (1 + rs)))
-      self._prevInputValue = v
+    def add(self, v):
+        if self._prevInputValue is None:
+            self._prevInputValue = v
 
-    return self.v()
+        ud = self._ud(v)
+        self._uEMA.add(ud['u'])
+        self._dEMA.add(ud['d'])
+        rs = self._rs()
+
+        if rs is not None:
+            super().add(100 - (100 / (1 + rs)))
+            self._prevInputValue = v
+
+        return self.v()

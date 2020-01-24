@@ -1,5 +1,3 @@
-name = 'bfxhfindicators'
-
 from bfxhfindicators.indicator import Indicator
 from bfxhfindicators.ema import EMA
 from bfxhfindicators.rsi import RSI
@@ -43,3 +41,6 @@ from bfxhfindicators.true_strength_index import TSI
 from bfxhfindicators.trix import TRIX
 from bfxhfindicators.stochastic import Stochastic
 from bfxhfindicators.stochastic_rsi import StochasticRSI
+
+
+name = 'bfxhfindicators'
