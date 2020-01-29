@@ -1,4 +1,4 @@
-from bfxhfindicators.indicator import Indicator
+from bfxhfindicators.indicator import Indicator, POSITIVE_SLOPE, NEGATIVE_SLOPE
 from bfxhfindicators.ema import EMA
 from bfxhfindicators.rsi import RSI
 from bfxhfindicators.roc import ROC
